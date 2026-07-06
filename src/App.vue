@@ -1,12 +1,21 @@
 <script setup>
-import Button from './components/Button.vue'
+import CitySelect from './components/citySelect.vue';
 import Stat from './components/Stat.vue'
+const data = {
+  label: "Влажность",
+  value: "90%"
+}
+
+function getCity(city) {
+  console.log(city)
+}
 </script>
 
 <template>
   <main class="main">
-    <Stat />
-    <Button>Сохранить</Button>
+    <Stat v-bind="data" />
+    <Stat label="Осадки" value="0%" />
+    <CitySelect @change-city="getCity" />
   </main>
 </template>
 

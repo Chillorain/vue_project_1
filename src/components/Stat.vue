@@ -1,9 +1,14 @@
-<script setup></script>
+<script setup>
+    const {label = "Не указано", value} = defineProps({
+        label: String,
+        value: String
+    });
+</script>
 
 <template>
     <div class="stat">
-        <div class="stat-label">Влажность</div>
-        <div class="stat-value">90%</div>
+        <div class="stat-label">{{ label }}</div>
+        <div class="stat-value">{{ value }}</div>
     </div>
 </template>
 
@@ -16,6 +21,7 @@
     }
     .stat-label {
         font-weight: 700;
+        text-transform: uppercase;
     }
     .stat-value {
         font-weight: 500;
