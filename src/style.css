@@ -17,4 +17,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--color-bg);
   color: var(--primary);
+
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
 }
