@@ -1,50 +1,100 @@
 <script setup>
-import { ref, computed } from 'vue';
-import CitySelect from './components/citySelect.vue';
-import Stat from './components/Stat.vue'
+import { ref, computed } from "vue";
+import CitySelect from "./components/citySelect.vue";
+import Stat from "./components/Stat.vue";
+import Error from "./components/Error.vue";
+import DayCard from "./components/DayCard.vue";
 
-let savedcity = ref('Almaty');
-let data = ref({
-  humidity: 90,
-  rain: 0,
-  wind: 3
+const API_ENDPOINT = "https://api.weatherapi.com/v1";
+
+const errorMap = new Map([[1006, "Указанный город не найден"]]);
+
+let data = ref();
+let error = ref();
+
+const errorDisplay = computed(() => {
+  if (!error.value) {
+    return null;
+  }
+  const code = error.value.error.code;
+  return errorMap.get(code) || error.value.error.message;
 });
 
 const dataModified = computed(() => {
   return [
     {
-      label: 'Влажность',
-      stat: data.value.humidity + '%'
+      label: "Влажность",
+      stat: data.value.current.humidity + "%",
     },
     {
-      label: 'Осадки',
-      stat: data.value.rain + '%'
+      label: "Облачность",
+      stat: data.value.current.cloud + "%",
     },
     {
-      label: 'Ветер',
-      stat: data.value.wind + ' м/ч'
-    }
+      label: "Ветер",
+      stat: data.value.current.wind_kph + " км/ч",
+    },
   ];
 });
 
-function getCity(city) {
-  savedcity.value = city;
-  data.value.humidity = 20;
+async function getCity(city) {
+  const params = new URLSearchParams({
+    q: city,
+    lang: "ru",
+    key: "9e9fff6e50ab40bba25130416260908",
+    days: 3,
+  });
+  const res = await fetch(`${API_ENDPOINT}/forecast.json?${params.toString()}`);
+  if (res.status !== 200) {
+    error.value = await res.json();
+    data.value = null;
+    return;
+  }
+  error.value = null;
+  data.value = await res.json();
 }
 </script>
 
 <template>
   <main class="main">
-    <div id="city">{{ savedcity }}</div>
-    <Stat v-for="item in dataModified" v-bind="item" :key="item.label" />
+    <Error :error="errorDisplay" />
+    <div v-if="data" class="stat-data">
+      <div class="stat-list">
+        <Stat v-for="item in dataModified" v-bind="item" :key="item.label" />
+      </div>
+      <div class="day-card-list">
+        <DayCard
+          v-for="item in data.forecast.forecastday"
+          :key="item.date"
+          :weather-code="item.day.condition.code"
+          :temp="item.day.avgtemp_c"
+          :date="new Date(item.date)"
+        />
+      </div>
+    </div>
     <CitySelect @change-city="getCity" />
   </main>
 </template>
 
 <style scoped>
-  .main {
-    background: var(--color-bg-main);
-    padding: 60px 50px;
-    border-radius: 10%;
-  }
+.main {
+  background: var(--color-bg-main);
+  padding: 60px 50px;
+  border-radius: 10%;
+}
+.day-card-list {
+  display: flex;
+  gap: 5px;
+}
+.stat-data {
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+  margin-bottom: 70px;
+}
+.stat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 </style>
