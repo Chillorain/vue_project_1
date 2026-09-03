@@ -4,6 +4,7 @@ import Stat from "./Stat.vue";
 import Error from "./Error.vue";
 import DayCard from "./DayCard.vue";
 import { computed } from "vue";
+import { errorMap } from "../constants.js";
 
 const { error, data, activeIndex } = defineProps({
   error: Object,
@@ -13,7 +14,6 @@ const { error, data, activeIndex } = defineProps({
 
 const emit = defineEmits(["select-index", "select-city"]);
 
-const errorMap = new Map([[1006, "Указанный город не найден"]]);
 const errorDisplay = computed(() => {
   if (!error) {
     return null;
@@ -29,15 +29,16 @@ const statData = computed(() => {
   return [
     {
       label: "Влажность",
-      stat: data.current.humidity + "%",
+      stat: data.forecast.forecastday[activeIndex].day.avghumidity + "%",
     },
     {
-      label: "Облачность",
-      stat: data.current.cloud + "%",
+      label: "Вероятность осадков",
+      stat:
+        data.forecast.forecastday[activeIndex].day.daily_chance_of_rain + "%",
     },
     {
       label: "Ветер",
-      stat: data.current.wind_kph + " км/ч",
+      stat: data.forecast.forecastday[activeIndex].day.maxwind_kph + " км/ч",
     },
   ];
 });
@@ -61,7 +62,7 @@ const statData = computed(() => {
       />
     </div>
   </div>
-  <CitySelect @select-city="(city) => emit('select-city', city)" />
+  <CitySelect />
 </template>
 
 <style scoped>
